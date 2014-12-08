@@ -6,21 +6,21 @@
 
 static int SUM = 0;
 static sem_t mutex;
+
 typedef struct array {
-   int *random_ints;
    int length;
    int MAX;
+   int *random_ints;
 } Array;
 
 void *get_max(void *args) {
    int i = 0;
-   Array *p = (Array *) args;
+   Array *p = (Array *)args;
+   p->MAX = 0;
    for (i = 0; i < p->length; i++) {
       sem_wait(&mutex);
-      printf("Checking max from %d against %d\n", p -> MAX, p -> random_ints[i]);
       if (p->random_ints[i] > p->MAX) {
-         printf("Replacing max from %d to %d\n", p -> MAX, p -> random_ints[i]);
-         p -> MAX = p -> random_ints[i];
+         p->MAX = p->random_ints[i];
       }
       sem_post(&mutex);
    }
@@ -36,35 +36,41 @@ int main(int argc, char *argv[]) {
       5- print
 
     */
-   Array *pineapple = malloc(sizeof(Array));
-   int left_over = atoi(argv[1]) % atoi(argv[2]);
-   int i = 0;
-   pthread_t *threads = calloc(atoi(argv[2]), sizeof(pthread_t));
-   pineapple -> random_ints = calloc(atoi(argv[1]), sizeof(int));
-   pineapple -> length = atoi(argv[1]) / atoi(argv[2]);
-   pineapple -> MAX = 0;
+   Array *pineapple = malloc(sizeof(Array)) ;
+    
+   int elements = atoi(argv[1]), num_threads = atoi(argv[2]), left_over =
+      elements % num_threads, seed = atoi(argv[3]), task = atoi(argv[4]), i = 0;
+
+   pthread_t *threads = calloc(num_threads, sizeof(pthread_t));
+
+   pineapple->random_ints = calloc(elements, sizeof(int));
+   pineapple->length = elements / num_threads;
+   pineapple->random_ints= calloc(1, sizeof(Array));
    sem_init(&mutex, 0, 1);
 
-   srand(atoi(argv[3]));
+   srand(seed);
 
-   for (i = 0; i < atoi(argv[1]); i++) {
-      pineapple -> random_ints[i] = rand();
+   for (i = 0; i < elements; i++) {
+      pineapple->random_ints[i] = rand();
    }
-
-   if (atoi(argv[4]) == 1) {
-      for (i = 0; i < atoi(argv[2]) - 1; i++) {
-         pthread_create(&threads[i], NULL, get_max, pineapple);
+   if (task == 1) {
+       /*MAX*/ 
+      for (i = 0; i < num_threads; i++) {
+         if(i == (num_threads - 2)) {
+             pineapple->length += left_over;
+         }
+          pthread_create(&threads[i], NULL, get_max, pineapple);
       }
-      pineapple -> length += left_over;
-      pthread_create(&threads[i], NULL, get_max, pineapple);
-      for (i = 0; i < atoi(argv[2]) - 1; i++) {
+      for (i = 0; i < num_threads; i++) {
          pthread_join(threads[i], NULL);
-
       }
       printf("MAX %d\n", pineapple->MAX);
+
    } else {
       /* SUM */
+      SUM = 0;
    }
-
+   free(pineapple-> random_ints);
+   free(pineapple);
    return 0;
 }

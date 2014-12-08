@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
    srand(seed);
 
    for (i = 0; i < elements; i++) {
-      int random = rand();
+      int random = rand() % 100;
       if (random > maxh){
          maxh = random;
       }

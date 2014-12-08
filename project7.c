@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
     */
    Array pineapple = calloc(1, sizeof(Array));
-   pineapple.random_ints = calloc(argv[1], sizeof(int))
+   pineapple.random_ints = calloc(atoi(argv[1]), sizeof(int))
    left_over = argv[1] % argv[2];
    pineapple.length = argv[1] / argv[2];
    pthread_t *threads = calloc(argv[2], sizeof(pthread_t));

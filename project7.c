@@ -15,11 +15,12 @@ typedef struct array {
 void *get_max(void *args) {
    int i = 0;
    Array *p = (Array *) args;
-   p->MAX = 0;
    for (i = 0; i < p->length; i++) {
       sem_wait(&mutex);
+      printf("Checking max from %d against %d\n", p -> MAX, p -> random_ints[i]);
       if (p->random_ints[i] > p->MAX) {
-         p->MAX = p->random_ints[i];
+         printf("Replacing max from %d to %d\n", p -> MAX, p -> random_ints[i]);
+         p -> MAX = p -> random_ints[i];
       }
       sem_post(&mutex);
    }
@@ -41,6 +42,7 @@ int main(int argc, char *argv[]) {
    pthread_t *threads = calloc(atoi(argv[2]), sizeof(pthread_t));
    pineapple -> random_ints = calloc(atoi(argv[1]), sizeof(int));
    pineapple -> length = atoi(argv[1]) / atoi(argv[2]);
+   pineapple -> MAX = 0;
    sem_init(&mutex, 0, 1);
 
    srand(atoi(argv[3]));
@@ -48,6 +50,7 @@ int main(int argc, char *argv[]) {
    for (i = 0; i < atoi(argv[1]); i++) {
       pineapple -> random_ints[i] = rand();
    }
+
    if (atoi(argv[4]) == 1) {
       for (i = 0; i < atoi(argv[2]) - 1; i++) {
          pthread_create(&threads[i], NULL, get_max, pineapple);

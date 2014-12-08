@@ -27,7 +27,7 @@ void *get_max(void *args) {
 }
 
 int main(int argc, char *argv[]) {
-   /*
+  /*
       argv[1]-elements
       2- threads
       3- seed
@@ -36,14 +36,18 @@ int main(int argc, char *argv[]) {
 
     */
    Array pineapple = calloc(1, sizeof(Array));
-   pineapple.random_ints = calloc(atoi(argv[1]), sizeof(int))
-   left_over = argv[1] % argv[2];
-   pineapple.length = argv[1] / argv[2];
-   pthread_t *threads = calloc(argv[2], sizeof(pthread_t));
-   int i, separation = 0, left_over = 0;
+   int elements = atoi(argv[1]);
+   int num_threads = atoi(argv[2]);
+   int left_over = elements % num_threads;
+   int seed = atoi(arg[3]); 
+
+   pthread_t *threads = calloc(num_threads, sizeof(pthread_t));
+
+   pineapple.random_ints = calloc(elements, sizeof(int));
+   pineapple.length = elements / threads;
    sem_init(&mutex, 0, 1);
 
-   srand(argv[3]);
+   srand(seed);
 
    for (i = 0; i < argv[1]; i++) {
       pineapple.random_ints[i] = rand();

@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
    Array *pineapple = malloc(sizeof(Array)) ;
     
    int elements = atoi(argv[1]), num_threads = atoi(argv[2]), left_over =
-      elements % num_threads, seed = atoi(argv[3]), task = atoi(argv[4]), i = 0;
+      elements % num_threads, seed = atoi(argv[3]), task = atoi(argv[4]), i = 0, maxh=-1;
 
    pthread_t *threads = calloc(num_threads, sizeof(pthread_t));
 
@@ -51,8 +51,14 @@ int main(int argc, char *argv[]) {
    srand(seed);
 
    for (i = 0; i < elements; i++) {
-      pineapple->random_ints[i] = rand();
+      int random = rand();
+      if (random > maxh){
+         maxh = random;
+      }
+      pineapple->random_ints[i] = random;
+      printf("random %d\n", random);
    }
+   printf("maxh :%d\n", maxh);
    if (task == 1) {
        /*MAX*/ 
       for (i = 0; i < num_threads; i++) {

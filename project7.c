@@ -11,7 +11,6 @@ typedef struct array {
    int length; /*the size of the current threads array*/
    int MAX; /*the Max*/
    int *random_ints; /*the array of random integers*/
-   
 } Array;
 
 static int SUM = 0;
@@ -40,6 +39,26 @@ void *get_max(void *args) {
    return NULL;
 }
 
+void *get_sum(void *args) {
+   Array *p = (Array *) args;
+   int i = 0;
+
+   pthread_mutex_lock(&mutex);
+   for (i = 0; i < p->length; i++) {
+     SUM += p->random_ints[i];
+   }
+   p->random_ints += p->length;
+   p->count++;
+   /*when the current thread is the last one*/
+   if (p->count == (p->threads - 1)) {
+      /*the last thread will have the left over elements*/
+      p->length += p->left_over;
+   }
+   pthread_mutex_unlock(&mutex);
+   p = NULL;
+   return NULL;
+}
+
 int main(int argc, char *argv[]) {
    /*
       argv[1]-elements
@@ -51,7 +70,7 @@ int main(int argc, char *argv[]) {
     */
    Array *pineapple = calloc(1,sizeof(Array));
    int *restore, elements = atoi(argv[1]), num_threads = atoi(argv[2]), seed =
-      atoi(argv[3]), task = atoi(argv[4]), i = 0, expected = 0;
+      atoi(argv[3]), task = atoi(argv[4]), i = 0, expected_max = 0, expected_sum = 0;
    char print = *argv[5];
    pthread_t *threads = calloc(num_threads, sizeof(pthread_t));
 
@@ -67,11 +86,13 @@ int main(int argc, char *argv[]) {
    srand(seed);
 
    for (i = 0; i < elements; i++) {
-      int random = rand();
+      int random = rand() % 100;
       pineapple->random_ints[i] = random;
-      if (random > expected) {
-         expected = random;
+      expected_sum += random;
+      if (random > expected_max) {
+         expected_max = random;
       }
+
    }
 
    if (task == 1) {
@@ -85,16 +106,27 @@ int main(int argc, char *argv[]) {
       }
       pthread_mutex_destroy(&mutex);
       if(print == 'Y') {
-         printf("%d\t our_MAX\n%d\t expected\n", pineapple->MAX, expected);
+         printf("%d\t our_MAX\n%d\t expected\n", pineapple->MAX, expected_max);
       }
    } else {
-      /* SUM */
-      SUM = 0;
+       pthread_mutex_init(&mutex, NULL);
+      for (i = 0; i < num_threads; i++) {
+         pthread_create(&threads[i], NULL, get_sum, pineapple);
+      }
+      for (i = 0; i < num_threads; i++) {
+         pthread_join(threads[i], NULL);
+      }
+      pthread_mutex_destroy(&mutex);
+      if(print == 'Y') {
+         printf("%d\t our_SUM\n%d\t expected\n", SUM, expected_sum);
+      }
    }
    free(restore);
    restore = NULL;
    pineapple->random_ints = NULL;
    free(pineapple);
    pineapple = NULL;
+   free(threads);
+   threads = NULL;
    return 0;
 }

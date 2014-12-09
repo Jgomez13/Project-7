@@ -4,9 +4,6 @@
 #include <time.h>
 #include <semaphore.h>
 
-static int SUM = 0;
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
 typedef struct array {
    int threads;/*number of threads*/
    int left_over;/*if the #of ele doesnt divide evenly we neet to account*/
@@ -14,7 +11,12 @@ typedef struct array {
    int length; /*the size of the current threads array*/
    int MAX; /*the Max*/
    int *random_ints; /*the array of random integers*/
+   
 } Array;
+
+static int SUM = 0;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 
 void *get_max(void *args) {
    Array *p = (Array *) args;
